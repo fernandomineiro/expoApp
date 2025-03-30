@@ -1,23 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import authService from '../services/authService';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp } from '@react-navigation/native';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 
-type RootStackParamList = {
-  Login: undefined;
-  Home: undefined;
-};
-
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
-type LoginScreenRouteProp = RouteProp<RootStackParamList, 'Login'>;
-
-const LoginScreen = () => {
-  const navigation = useNavigation<LoginScreenNavigationProp>();
-  const route = useRoute<LoginScreenRouteProp>();
+const LoginScreen: React.FC = () => {
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -26,7 +15,15 @@ const LoginScreen = () => {
       const token = await authService.login(email, password);
       navigation.navigate('Home');
     } catch (error) {
-      Alert.alert('Erro', 'Email ou senha inválidos');
+      if (error.message === 'Usuário não encontrado') {
+        alert('Usuário não encontrado');
+      } else if (error.message === 'Email ou senha inválidos') {
+        alert('Email ou senha inválidos');
+      } else if (error.message === 'Senha incorreta') {
+        alert('Senha incorreta');
+      } else {
+        alert('Erro ao fazer login. Tente novamente.');
+      }
     }
   };
 
@@ -38,24 +35,22 @@ const LoginScreen = () => {
         placeholder="Senha"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry={true} // Correção aqui
+        secureTextEntry={true}
       />
       <Button title="Login" onPress={handleLogin} />
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.registerLink}>Cadastre-se aqui!</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  // ... outros estilos ...
+  registerLink: {
+    marginTop: 20,
     textAlign: 'center',
+    color: 'blue',
   },
 });
 
